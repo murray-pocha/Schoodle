@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
-const mockEvents = {}; //temporary in-memory store for events(replace with database query later)
+const mockEvents = {}; //temporary in-memory store for events(replace with database query later to manage 'events' table)
 
 router.get('/new', (req,res) => {
   res.render('new-event');
@@ -15,7 +15,7 @@ router.post("/", (req, res) => {
   }
   const eventId = uuidv4();
   
-  mockEvents[eventId] = { //adjusted to accept mockEvents
+  mockEvents[eventId] = { //adjusted to accept mockEvents, replace later with database query to insert event into the 'events' table
     id: eventId,
     title,
     description,
