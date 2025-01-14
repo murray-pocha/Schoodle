@@ -13,9 +13,11 @@ CREATE TABLE events (
 CREATE TABLE time_slots (
   id SERIAL PRIMARY KEY,
   event_id INTEGER REFERENCES events(id) ON DELETE CASCADE,
-  date DATE NOT NULL,
-  time TIME NOT NULL,
-  UNIQUE (event_id, date, time)
+  date1 DATE NOT NULL,
+  time1 TIME NOT NULL,
+  date2 DATE NOT NULL,
+  time2 TIME NOT NULL,
+  UNIQUE (event_id, date1, time1, date2, time2)
 );
 
 CREATE TABLE attendees (
@@ -24,7 +26,7 @@ CREATE TABLE attendees (
   name VARCHAR(255) NOT NULL,
   email VARCHAR(255) NOT NULL,
   UNIQUE (event_id, email)
- );
+);
 
 CREATE TABLE responses (
   id SERIAL PRIMARY KEY,
