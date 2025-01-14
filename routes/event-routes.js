@@ -14,6 +14,7 @@ router.get('/new', (req, res) => {
 
 
 router.post("/", (req, res) => {
+  console.log('Request body:', req.body);
   const { title, description, eventDate1, eventTime1, eventDate2, eventTime2, name, email } = req.body;
 
   if (!title || !description || !eventDate1 || !eventTime1 || !eventDate2 || !eventTime2 || !name || !email) {
