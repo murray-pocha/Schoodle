@@ -1,13 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width", initial-scale="1.0">
-    <title><%= event.title%></title>
-  </head>
-  <body>
-    <h1><%= event.title%></h1>
-    <p><strong>Description:</strong> <%= event.description%></p>
-    <p><strong>Organizer:</strong><%= event.organizer_name%> (<%= event.organizer_email%>)</p>
-  </body>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width" , initial-scale="1.0">
+  <title>
+    <%= event.title%>
+  </title>
+</head>
+
+<body>
+  <h1><%= event.title%></h1>
+  <p><strong>Description:</strong><%= event.description%></p>
+  <p><strong>Organizer:</strong><%= event.organizer_name%> (<%= event.organizer_email%>)</p>
+
+</body>
 </html>
