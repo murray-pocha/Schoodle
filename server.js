@@ -40,8 +40,7 @@ app.use(express.json());
 const userApiRoutes = require('./routes/users-api');
 const widgetApiRoutes = require('./routes/widgets-api');
 const usersRoutes = require('./routes/users');
-const eventRoutes = require('./routes/event-routes');
-const timeSlotRoutes = require('./routes/time-slot-routes');
+const attendeeRoutes = require('./routes/attendee-routes')
 
 // Mount all resource routes
 // Note: Feel free to replace the example routes below with your own
@@ -49,8 +48,7 @@ const timeSlotRoutes = require('./routes/time-slot-routes');
 app.use('/api/users', userApiRoutes);
 app.use('/api/widgets', widgetApiRoutes);
 app.use('/users', usersRoutes);
-app.use('/events', eventRoutes);
-app.use('/events', timeSlotRoutes);
+app.use('/events', attendeeRoutes)
 // Note: mount other resources here, using the same pattern above
 
 // Home page
