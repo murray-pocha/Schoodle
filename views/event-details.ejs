@@ -1,13 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width", initial-scale="1.0">
-    <title><%= event.title%></title>
-  </head>
-  <body>
-    <h1><%= event.title%></h1>
-    <p><strong>Description:</strong> <%= event.description%></p>
-    <p><strong>Organizer:</strong><%= event.organizer_name%> (<%= event.organizer_email%>)</p>
-  </body>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width" , initial-scale="1.0">
+  <title>
+    <%= eventDetails.title%>
+  </title>
+</head>
+
+<body>
+  <h1><%= eventDetails.title%></h1>
+  <p><strong>Description: </strong><%= eventDetails.description%></p>
+  <br>
+  <p><strong>Date 1: </strong><%= eventDetails.date1%></p>
+  <p><strong>Time 1: </strong><%= eventDetails.time1%></p>
+  <br>
+  <p><strong>Date 2: </strong><%= eventDetails.date2%></p>
+  <p><strong>Time 2: </strong><%= eventDetails.time2%></p>
+  <br>
+  <p><strong>Secret URL: </strong><%= eventDetails.secret_url%></p>
+  <p><strong>Organizer: </strong><%= eventDetails.organizer_name%> (<%= eventDetails.organizer_email%>)</p>
+
+</body>
 </html>
