@@ -8,7 +8,7 @@ router.get('/:event_id/attendees/new', (req, res) => {
     .then((events) => {
       getTimeslotsByEventId(eventId)
         .then((timeSlots) => {
-          res.render("attendee", { timeSlots, event: events[0] })
+          res.render("attendee", { timeSlots, event: events[0], route: eventId })
         })
         .catch((e) => {
           res.status(500).send(e)

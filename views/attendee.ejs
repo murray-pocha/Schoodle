@@ -7,10 +7,11 @@
 </head>
 <body>
     <div class="form-container">
+        <% if (event?.id) { %>
         <h1>Meeting Availability</h1>
-        <h2>Event Title: <%- event.title %></h2>
-        <h2>Event Description: <%- event.description %></h2>
-        <form id="attendees-form" action="/events/<%= event.id %>/attendees" method="POST">
+        <h2>Event Title: <%- event?.title %></h2>
+        <h2>Event Description: <%- event?.description %></h2>
+        <form id="attendees-form" action="/events/<%= event?.id ?? '' %>/attendees" method="POST">
             <!-- Name and Email -->
             <label for="name">Name:</label>
             <input type="text" id="name" name="name" placeholder="Your full name" required>
@@ -49,6 +50,9 @@
             <!-- Submit Button -->
             <button type="submit" class="btn-submit">Submit Response</button>
         </form>
+        <% } else { %>
+            <h1>Event with id: <%= route %> does not exist</h1>
+        <% } %>
     </div>
 </body>
 </html>
