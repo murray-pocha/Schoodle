@@ -1,0 +1,54 @@
+ body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: white;
+    padding: 10px 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Logo Styles */
+  .logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: darkgreen;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* Navbar Links */
+  .nav-links {
+    display: flex;
+    gap: 20px;
+  }
+
+  .nav-links a {
+    text-decoration: none;
+    color: darkgreen;
+    font-size: 16px;
+  }
+
+  .nav-links a:hover {
+    text-decoration: underline;
+  }
+
+  /* Button Styles */
+  .create-poll-btn {
+    background-color: darkgreen;
+    color: white;
+    padding: 10px 15px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .create-poll-btn:hover {
+    background-color: #145a32;
+  }

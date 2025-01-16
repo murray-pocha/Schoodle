@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Responses</title>
+    <style>
+    </style>
+</head>
+<body>
+    <h1>Responses for Event: <%= event.title %></h1>
+    <p><strong>Description:</strong> <%= event.description %></p>
+
+    <h2>Attendee Responses</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Attendee Name</th>
+                <% timeSlots.forEach(slot => { %>
+                <th>Slot <%= slot.id %></th>
+                <% }) %>
+            </tr>
+        </thead>
+        <tbody>
+            <% responses.forEach(response => { %>
+            <tr>
+                <td><%= response.attendee_name %></td>
+                <% timeSlots.forEach(slot => { %>
+                <td>
+                    <% if (response.availability[slot.id] === 'yes') { %>
+                        ✅ Yes
+                    <% } else if (response.availability[slot.id] === 'no') { %>
+                        ❌ No
+                    <% } else { %>
+                        - 
+                    <% } %>
+                </td>
+                <% }) %>
+            </tr>
+            <% }) %>
+        </tbody>
+    </table>
+
+    <h2>Organizer Insights</h2>
+    <div class="summary">
+        <h3>Time Slot Availability Summary</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Time Slot</th>
+                    <th>Yes</th>
+                    <th>No</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% Object.keys(availabilitySummary).forEach(slotId => { %>
+                <tr class="<%= availabilitySummary[slotId].yes > availabilitySummary[slotId].no ? 'highlight' : '' %>">
+                    <td>Slot <%=
