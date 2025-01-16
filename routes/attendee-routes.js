@@ -6,8 +6,6 @@ router.get('/:event_id/attendees/new', (req, res) => {
   const eventId = req.params.event_id
   getEventById(eventId)
     .then((events) => {
-
-
       getTimeslotsByEventId(eventId)
         .then((timeSlots) => {
           res.render("attendee", { timeSlots, event: events[0] })
@@ -17,7 +15,7 @@ router.get('/:event_id/attendees/new', (req, res) => {
         })
     })
     .catch((e) => {
-      res.status(500).send(e)
+      res.status(403).send("Event not found")
     })
 });
 
