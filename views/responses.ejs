@@ -1,90 +1,36 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Event Responses</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            margin-top: 20px;
-        }
-        table, th, td {
-            border: 1px solid #ddd;
-        }
-        th, td {
-            padding: 10px;
-            text-align: center;
-        }
-        th {
-            background-color: #f4f4f4;
-        }
-        .summary {
-            margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            background-color: #f9f9f9;
-        }
-        .highlight {
-            background-color: #d4edda;
-            font-weight: bold;
-        }
-    </style>
 </head>
 <body>
     <h1>Responses for Event: <%= event.title %></h1>
-    <p><strong>Description:</strong> <%= event.description %></p>
+    <h2>Description: <%= event.description %></h2>
 
-    <h2>Attendee Responses</h2>
     <table>
         <thead>
             <tr>
                 <th>Attendee Name</th>
-                <% (timeSlots ?? []).forEach(slot => { %>
-                <th><%= slot.date %> <%= slot.time %></th>
-                <% }) %>
+                <th>Attendee Email</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Response</th>
             </tr>
         </thead>
         <tbody>
-            <% attendees.forEach(response => { %>
+            <% responses.forEach(response => { %>
             <tr>
-                <td><%= response.name %></td>
-                <% timeSlots.forEach(slot => { %>
-                <td>
-                    <% if (selectedTimeSlots[response.attendee_id][slot.id] === true) { %>
-                        ✅ Yes
-                    <% } else { %>
-                        ❌ No
-                    <% } %>
-                </td>
-                <% }) %>
+                <td><%= response.attendee_name %></td>
+                <td><%= response.attendee_email %></td>
+                <td><%= response.date %></td>
+                <td><%= response.time %></td>
+                <td><%= response.response %></td>
             </tr>
-            <% }) %>
+            <% }); %>
         </tbody>
     </table>
-
-    <h2>Organizer Insights</h2>
-    <div class="summary">
-        <h3>Time Slot Availability Summary</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Time Slot</th>
-                    <th>Yes</th>
-                    <th>No</th>
-                </tr>
-            </thead>
-            <tbody>
-             
-                </tr>
-            </tbody>
-        </table>
-        <p><strong>Recommendation:</strong> Choose a time slot with the most "Yes" responses for the best turnout.</p>
-    </div>
 </body>
 </html>
