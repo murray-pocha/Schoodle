@@ -40,7 +40,7 @@ app.use(express.json());
 const userApiRoutes = require('./routes/users-api');
 const widgetApiRoutes = require('./routes/widgets-api');
 const usersRoutes = require('./routes/users');
-const attendeeRoutes = require('./routes/attendee-routes')
+const eventRoutes = require('./routes/event-routes')
 
 // Mount all resource routes
 // Note: Feel free to replace the example routes below with your own
@@ -48,7 +48,7 @@ const attendeeRoutes = require('./routes/attendee-routes')
 app.use('/api/users', userApiRoutes);
 app.use('/api/widgets', widgetApiRoutes);
 app.use('/users', usersRoutes);
-app.use('/events', attendeeRoutes)
+app.use('/events', eventRoutes);
 
 // Note: mount other resources here, using the same pattern above
 
