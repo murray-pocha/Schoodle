@@ -3,24 +3,51 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width" , initial-scale="1.0">
-  <title>
-    <%= eventDetails.title%>
-  </title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/styles/event-details.css">
+  <title><%= eventDetails.title %></title>
 </head>
 
 <body>
-  <h1><%= eventDetails.title%></h1>
-  <p><strong>Description: </strong><%= eventDetails.description%></p>
-  <br>
-  <p><strong>Date 1: </strong><%= eventDetails.date1%></p>
-  <p><strong>Time 1: </strong><%= eventDetails.time1%></p>
-  <br>
-  <p><strong>Date 2: </strong><%= eventDetails.date2%></p>
-  <p><strong>Time 2: </strong><%= eventDetails.time2%></p>
-  <br>
-  <p><strong>Secret URL: </strong><%= eventDetails.secret_url%></p>
-  <p><strong>Organizer: </strong><%= eventDetails.organizer_name%> (<%= eventDetails.organizer_email%>)</p>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="/" class="nav-link">Home</a>
+      <a href="/events/new" class="nav-link">Create Event</a>
+    </div>
+  </nav>
 
+  <!-- Main Container -->
+  <div class="container">
+    <!-- Header Section -->
+    <div class="header-image">
+      <h1><%= eventDetails.title %></h1>
+    </div>
+
+    <!-- Event Details -->
+    <div class="content">
+      <h2>Description</h2>
+      <p><%= eventDetails.description %></p>
+
+      <h2>Event Schedule</h2>
+      <div class="details-grid">
+        <div class="box">
+          <h3>Date & Time 1</h3>
+          <p><strong>Date:</strong> <%= eventDetails.date1 %></p>
+          <p><strong>Time:</strong> <%= eventDetails.time1 %></p>
+        </div>
+        <div class="box">
+          <h3>Date & Time 2</h3>
+          <p><strong>Date:</strong> <%= eventDetails.date2 %></p>
+          <p><strong>Time:</strong> <%= eventDetails.time2 %></p>
+        </div>
+      </div>
+
+      <h2>Additional Information</h2>
+      <p><strong>Secret URL:</strong> <span class="secret-url"><%= eventDetails.secret_url %></span></p>
+      <p><strong>Organizer:</strong> <%= eventDetails.organizer_name %> (<a href="mailto:<%= eventDetails.organizer_email %>"><%= eventDetails.organizer_email %></a>)</p>
+    </div>
+  </div>
 </body>
+
 </html>
