@@ -1,15 +1,33 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Event Responses</title>
+    <title>Responses for Event: <%= event.title %></title>
 </head>
 <body>
     <h1>Responses for Event: <%= event.title %></h1>
     <h2>Description: <%= event.description %></h2>
 
+    <h3>Event Time Slots</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% timeSlots.forEach(slot => { %>
+            <tr>
+                <td><%= slot.date %></td>
+                <td><%= slot.time %></td>
+            </tr>
+            <% }); %>
+        </tbody>
+    </table>
+
+    <h3>Attendee Responses</h3>
     <table>
         <thead>
             <tr>
@@ -18,6 +36,7 @@
                 <th>Date</th>
                 <th>Time</th>
                 <th>Response</th>
+                <th>Response Time</th>
             </tr>
         </thead>
         <tbody>
@@ -27,7 +46,8 @@
                 <td><%= response.attendee_email %></td>
                 <td><%= response.date %></td>
                 <td><%= response.time %></td>
-                <td><%= response.response %></td>
+                <td><%= response.response || 'No response' %></td> <!-- Ensures 'No response' is displayed if response is null -->
+                <td><%= response.response_time %></td>
             </tr>
             <% }); %>
         </tbody>
