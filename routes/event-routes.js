@@ -141,6 +141,7 @@ router.get('/:event_id/attendees/new', (req, res) => {
 
 
 router.post('/:event_id/attendees', (req, res) => {
+  console.log('Form submission received:', req.body);
   const { event_id } = req.params;
   const { name, email, ...availability } = req.body;
 
