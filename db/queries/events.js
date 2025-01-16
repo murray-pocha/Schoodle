@@ -13,6 +13,8 @@ const getTimeslotsByEventId = (eventId) => {
     })
 };
 
+
+
 const createAttendee = ({email, eventId, name}) => {
     const query = {
         text: 'INSERT INTO attendees(event_id, name, email) VALUES($1, $2, $3) ON CONFLICT (event_id, email) DO UPDATE SET name = EXCLUDED.name RETURNING *',
@@ -25,15 +27,23 @@ const createAttendee = ({email, eventId, name}) => {
 
 
 const createResponsesForAttendee = (respones) => {
-    
-    console.log("responses======>\n", respones)
     const query = {
         text: `INSERT INTO responses(event_id, time_slot_id, attendee_id) VALUES ${respones}`
     }
     return db.query(query).then((res) => {
         return res.rows[0]
     })
+}
+
+const getResponsesByEventId = (eventId) => {
+    return db.query(`SELECT * FROM responses 
+                    INNER JOIN time_slots ON time_slots.id = responses.time_slot_id 
+                    INNER JOIN attendees ON attendees.id = responses.attendee_id
+                    WHERE responses.event_id = ${eventId};`)
+        .then((data) => {
+            return data.rows
+        })
 };
 
 
-module.exports = { getEventById, getTimeslotsByEventId, createAttendee, createResponsesForAttendee };
+module.exports = { getEventById, getTimeslotsByEventId, createAttendee, createResponsesForAttendee, getResponsesByEventId };

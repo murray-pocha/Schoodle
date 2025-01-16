@@ -45,23 +45,21 @@
         <thead>
             <tr>
                 <th>Attendee Name</th>
-                <% timeSlots.forEach(slot => { %>
-                <th>Slot <%= slot.id %></th>
+                <% (timeSlots ?? []).forEach(slot => { %>
+                <th><%= slot.date %> <%= slot.time %></th>
                 <% }) %>
             </tr>
         </thead>
         <tbody>
-            <% responses.forEach(response => { %>
+            <% attendees.forEach(response => { %>
             <tr>
-                <td><%= response.attendee_name %></td>
+                <td><%= response.name %></td>
                 <% timeSlots.forEach(slot => { %>
                 <td>
-                    <% if (response.availability[slot.id] === 'yes') { %>
+                    <% if (selectedTimeSlots[response.attendee_id][response.time_slot_id]) { %>
                         ✅ Yes
-                    <% } else if (response.availability[slot.id] === 'no') { %>
-                        ❌ No
                     <% } else { %>
-                        - 
+                        ❌ No
                     <% } %>
                 </td>
                 <% }) %>
@@ -82,13 +80,8 @@
                 </tr>
             </thead>
             <tbody>
-                <% Object.keys(availabilitySummary).forEach(slotId => { %>
-                <tr class="<%= availabilitySummary[slotId].yes > availabilitySummary[slotId].no ? 'highlight' : '' %>">
-                    <td>Slot <%= slotId %></td>
-                    <td><%= availabilitySummary[slotId].yes %></td>
-                    <td><%= availabilitySummary[slotId].no %></td>
+             
                 </tr>
-                <% }) %>
             </tbody>
         </table>
         <p><strong>Recommendation:</strong> Choose a time slot with the most "Yes" responses for the best turnout.</p>
