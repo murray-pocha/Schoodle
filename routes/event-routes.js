@@ -100,26 +100,91 @@ router.get('/event-details', (req, res) => {
 router.get('/:event_id/attendees/new', (req, res) => {
   const { event_id } = req.params;
 
-  const query = `
+  const eventQuery = `
   SELECT * FROM events
-  WHERE id = $1;
+  WHERE secret_url = $1;
   `;
 
-  const values = [event_id];
+  const timeSlotsQuery = `
+  SELECT id, date1 AS date, time1 AS time
+  FROM time_slots
+  WHERE event_id::text = $1;
+  `;
 
-  db.query(query, values)
-    .then(result => {
-      const event = result.rows[0];
+  db.query(eventQuery, [event_id])
+    .then(eventResult => {
+      const event = eventResult.rows[0];
 
       if (!event) {
         return res.status(404).send('Event not found.');
       }
 
-      res.render('attendee-form', { event });
+      console.log('Event found:', event);
+
+      db.query(timeSlotsQuery, [event.id])
+        .then(timeSlotsResult => {
+          console.log('time slots:', timeSlotsResult.rows);
+          const timeSlots = timeSlotsResult.rows;
+
+          res.render('attendee', { event, timeSlots });
+        })
+        .catch(err => {
+          console.error('Error fetching time slots:', err);
+          res.status(500).send('Error fetching time slots.');
+        });
     })
     .catch(err => {
       console.error('Error fetching event:', err);
       res.status(500).send('An error occurred while fetching the event.');
+    });
+});
+
+
+router.post('/:event_id/attendees', (req, res) => {
+  const { event_id } = req.params;
+  const { name, email, ...availability } = req.body;
+
+  if (!name || !email) {
+    return res.status(400).send('Name and email are required.');
+  }
+
+  const attendeeQuery = `
+  INSERT INTO attendees (event_id, name, email)
+  VALUES ($1, $2, $3)
+  RETURNING id;
+  `;
+
+  const attendeeValues = [event_id, name, email];
+
+  db.query(attendeeQuery, attendeeValues)
+    .then(attendeeResult => {
+      const attendeeId = attendeeResult.rows[0].id;
+
+      const responseValues = Object.entries(availability)
+        .filter(([Key, value]) => Key.startsWith('availability_'))
+        .map(([key, value]) => {
+          const timeSlotId = key.split('_')[1];
+          return `(${attendeeId}, ${event_id}, ${timeSlotId}, CURRENT_TIMESTAMP)`;
+        })
+        .join(', ');
+
+      if (!responseValues) {
+        return res.status(400).send('No availability data provided.');
+      }
+
+      const responseQuery = `
+    INSERT INTO responses (attendee_id, event_id, time_slot_id, updated_at)
+    VALUES ${responseValues};
+    `;
+
+      return db.query(responseQuery);
+    })
+    .then(() => {
+      res.redirect(`/events/${event_id}/responses`);
+    })
+    .catch(err => {
+      console.error('Error saving attendee or responses:', err);
+      res.status(500).send('An error occured while saving your response.');
     });
 });
 
