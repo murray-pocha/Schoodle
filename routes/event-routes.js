@@ -1,4 +1,4 @@
-// event-routes.js
+
 const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
@@ -28,14 +28,14 @@ router.post('/', (req, res) => {
   db.query(query, values)
     .then(result => {
       const event = result.rows[0];
-      const values_time_slot = [event.id, eventDate1, eventTime1, eventDate2, eventTime2];
-      const query_time_slot = `
+      const timeSlotQuery = `
         INSERT INTO time_slots (event_id, date1, time1, date2, time2)
         VALUES ($1, $2, $3, $4, $5)
         RETURNING id;
       `;
+      const timeSlotValues = [event.id, eventDate1, eventTime1, eventDate2, eventTime2];
 
-      return db.query(query_time_slot, values_time_slot).then(() => {
+      return db.query(timeSlotQuery, timeSlotValues).then(() => {
         res.redirect(`/events/event-details?eventId=${event.id}`);
       });
     })
@@ -53,36 +53,38 @@ router.get('/event-details', (req, res) => {
     return res.status(400).send("Event ID is required.");
   }
 
-  const query = `
+  const eventQuery = `
     SELECT * FROM events WHERE id = $1;
   `;
-  const values = [eventId];
+  const timeSlotsQuery = `
+    SELECT date1 AS date1, time1 AS time1, date2 AS date2, time2 AS time2
+    FROM time_slots
+    WHERE event_id = $1;
+  `;
 
-  db.query(query, values)
-    .then(result => {
-      const event = result.rows[0];
+  db.query(eventQuery, [eventId])
+    .then(eventResult => {
+      const event = eventResult.rows[0];
 
       if (!event) {
         return res.status(404).send('Event not found.');
       }
 
-      const query_time_slot = `
-        SELECT * FROM time_slots WHERE event_id = $1;
-      `;
-      db.query(query_time_slot, [eventId])
-        .then(result_time_slot => {
-          const timeSlots = result_time_slot.rows;
+      db.query(timeSlotsQuery, [eventId])
+        .then(timeSlotsResult => {
+          const timeSlots = timeSlotsResult.rows[0];
           const eventDetails = {
             title: event.title,
             description: event.description,
-            date1: timeSlots[0].date1,
-            time1: timeSlots[0].time1,
-            date2: timeSlots[0].date2,
-            time2: timeSlots[0].time2,
-            secret_url: event.secret_url,
             organizer_name: event.organizer_name,
             organizer_email: event.organizer_email,
+            secret_url: event.secret_url,
+            date1: timeSlots.date1,
+            time1: timeSlots.time1,
+            date2: timeSlots.date2,
+            time2: timeSlots.time2
           };
+
           res.render('event-details', { eventDetails });
         })
         .catch(err => {
@@ -91,24 +93,26 @@ router.get('/event-details', (req, res) => {
         });
     })
     .catch(err => {
-      console.error('Error fetching event from database:', err.stack);
+      console.error('Error fetching event:', err.stack);
       res.status(500).send('An error occurred while fetching the event.');
     });
 });
 
-
+// Route to render the attendee form
 router.get('/:event_id/attendees/new', (req, res) => {
   const { event_id } = req.params;
 
   const eventQuery = `
-  SELECT * FROM events
-  WHERE secret_url = $1;
+    SELECT * FROM events
+    WHERE secret_url = $1;
   `;
 
   const timeSlotsQuery = `
-  SELECT id, date1 AS date, time1 AS time
-  FROM time_slots
-  WHERE event_id::text = $1;
+    SELECT id, date1 AS date, time1 AS time
+    FROM time_slots
+    WHERE event_id = (
+      SELECT id FROM events WHERE secret_url = $1
+    );
   `;
 
   db.query(eventQuery, [event_id])
@@ -121,9 +125,9 @@ router.get('/:event_id/attendees/new', (req, res) => {
 
       console.log('Event found:', event);
 
-      db.query(timeSlotsQuery, [event.id])
+      db.query(timeSlotsQuery, [event_id])
         .then(timeSlotsResult => {
-          console.log('time slots:', timeSlotsResult.rows);
+          console.log('Time slots:', timeSlotsResult.rows);
           const timeSlots = timeSlotsResult.rows;
 
           res.render('attendee', { event, timeSlots });
@@ -139,9 +143,8 @@ router.get('/:event_id/attendees/new', (req, res) => {
     });
 });
 
-
+// Route to handle attendee form submission
 router.post('/:event_id/attendees', (req, res) => {
-  console.log('Form submission received:', req.body);
   const { event_id } = req.params;
   const { name, email, ...availability } = req.body;
 
@@ -149,67 +152,64 @@ router.post('/:event_id/attendees', (req, res) => {
     return res.status(400).send('Name and email are required.');
   }
 
-  const attendeeQuery = `
-  INSERT INTO attendees (event_id, name, email)
-  VALUES ($1, $2, $3)
-  RETURNING id;
+  const insertAttendeeQuery = `
+    INSERT INTO attendees (event_id, name, email)
+    VALUES ($1, $2, $3)
+    RETURNING id;
+  `;
+  const insertResponseQuery = `
+    INSERT INTO responses (attendee_id, event_id, time_slot_id, response)
+    VALUES ($1, $2, $3, $4);
   `;
 
-  const attendeeValues = [event_id, name, email];
-
-  db.query(attendeeQuery, attendeeValues)
+  db.query(insertAttendeeQuery, [event_id, name, email])
     .then(attendeeResult => {
       const attendeeId = attendeeResult.rows[0].id;
 
-      const responseValues = Object.entries(availability)
-        .filter(([Key, value]) => Key.startsWith('availability_'))
-        .map(([key, value]) => {
+      const responsePromises = Object.entries(availability).map(([key, value]) => {
+        if (key.startsWith('availability_')) {
           const timeSlotId = key.split('_')[1];
-          return `(${attendeeId}, ${event_id}, ${timeSlotId}, CURRENT_TIMESTAMP)`;
-        })
-        .join(', ');
+          return db.query(insertResponseQuery, [attendeeId, event_id, timeSlotId, value]);
+        }
+      });
 
-      if (!responseValues) {
-        return res.status(400).send('No availability data provided.');
-      }
-
-      const responseQuery = `
-    INSERT INTO responses (attendee_id, event_id, time_slot_id, updated_at)
-    VALUES ${responseValues};
-    `;
-
-      return db.query(responseQuery);
+      return Promise.all(responsePromises);
     })
     .then(() => {
       res.redirect(`/events/${event_id}/responses`);
     })
     .catch(err => {
       console.error('Error saving attendee or responses:', err);
-      res.status(500).send('An error occured while saving your response.');
+      res.status(500).send('An error occurred while saving your response.');
     });
 });
 
+// Route to fetch and display responses
 router.get('/:event_id/responses', (req, res) => {
   const { event_id } = req.params;
 
   const eventQuery = `
     SELECT * FROM events WHERE id = $1;
   `;
-
+  const timeSlotsQuery = `
+    SELECT id, date1 AS date, time1 AS time
+    FROM time_slots
+    WHERE event_id = $1;
+  `;
   const responsesQuery = `
     SELECT 
-    attendees.name AS attendee_name, 
-    attendees.email AS attendee_email, 
-    time_slots.date AS date, 
-    time_slots.time AS time, 
-    responses.updated_at AS response_time
-  FROM responses
-  JOIN attendees ON responses.attendee_id = attendees.id
-  JOIN time_slots ON responses.time_slot_id = time_slots.id
-  WHERE responses.event_id = $1;
+      attendees.name AS attendee_name,
+      attendees.email AS attendee_email,
+      time_slots.date AS date,
+      time_slots.time AS time,
+      responses.response AS response,
+      responses.updated_at AS response_time
+    FROM responses
+    JOIN attendees ON responses.attendee_id = attendees.id
+    JOIN time_slots ON responses.time_slot_id = time_slots.id
+    WHERE responses.event_id = $1;
   `;
 
-  // Fetch event details
   db.query(eventQuery, [event_id])
     .then(eventResult => {
       const event = eventResult.rows[0];
@@ -218,17 +218,23 @@ router.get('/:event_id/responses', (req, res) => {
         return res.status(404).send('Event not found.');
       }
 
-      // Fetch responses for the event
-      db.query(responsesQuery, [event_id])
-        .then(responsesResult => {
-          const responses = responsesResult.rows;
+      db.query(timeSlotsQuery, [event_id])
+        .then(timeSlotsResult => {
+          const timeSlots = timeSlotsResult.rows;
 
-          // Render the responses view
-          res.render('responses', { event, responses });
+          db.query(responsesQuery, [event_id])
+            .then(responsesResult => {
+              const responses = responsesResult.rows;
+              res.render('responses', { event, timeSlots, responses });
+            })
+            .catch(err => {
+              console.error('Error fetching responses:', err);
+              res.status(500).send('An error occurred while fetching responses.');
+            });
         })
         .catch(err => {
-          console.error('Error fetching responses:', err);
-          res.status(500).send('An error occurred while fetching responses.');
+          console.error('Error fetching time slots:', err);
+          res.status(500).send('An error occurred while fetching time slots.');
         });
     })
     .catch(err => {
