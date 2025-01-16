@@ -189,4 +189,52 @@ router.post('/:event_id/attendees', (req, res) => {
     });
 });
 
+router.get('/:event_id/responses', (req, res) => {
+  const { event_id } = req.params;
+
+  const eventQuery = `
+    SELECT * FROM events WHERE id = $1;
+  `;
+
+  const responsesQuery = `
+    SELECT 
+    attendees.name AS attendee_name, 
+    attendees.email AS attendee_email, 
+    time_slots.date AS date, 
+    time_slots.time AS time, 
+    responses.updated_at AS response_time
+  FROM responses
+  JOIN attendees ON responses.attendee_id = attendees.id
+  JOIN time_slots ON responses.time_slot_id = time_slots.id
+  WHERE responses.event_id = $1;
+  `;
+
+  // Fetch event details
+  db.query(eventQuery, [event_id])
+    .then(eventResult => {
+      const event = eventResult.rows[0];
+
+      if (!event) {
+        return res.status(404).send('Event not found.');
+      }
+
+      // Fetch responses for the event
+      db.query(responsesQuery, [event_id])
+        .then(responsesResult => {
+          const responses = responsesResult.rows;
+
+          // Render the responses view
+          res.render('responses', { event, responses });
+        })
+        .catch(err => {
+          console.error('Error fetching responses:', err);
+          res.status(500).send('An error occurred while fetching responses.');
+        });
+    })
+    .catch(err => {
+      console.error('Error fetching event:', err);
+      res.status(500).send('An error occurred while fetching event details.');
+    });
+});
+
 module.exports = router;
