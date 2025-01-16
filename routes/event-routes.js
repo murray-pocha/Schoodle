@@ -233,18 +233,17 @@ router.get('/:event_id/responses', async (req, res) => {
       return accum;
     }, {}))
 
-    for (const response of responses) {
+    for (const response of attendees) {
       selectedTimeSlots[response.attendee_id] = {}
       for (const timeSlot of timeSlots) {
-        if (response.time_slot_id === timeSlot.id) {
+
+        if (responses.filter(r => r.attendee_id === response.attendee_id && r.time_slot_id === timeSlot.id).length > 0) {
           selectedTimeSlots[response.attendee_id][timeSlot.id] = true
         } else {
           selectedTimeSlots[response.attendee_id][timeSlot.id] = false
         }
       }
     }
-
-    console.log("Selected Time Slots", selectedTimeSlots)
     // console.log("Time Slots", timeSlots)
     res.render('responses', { event, responses, timeSlots, selectedTimeSlots, attendees });
   } catch (error) {
