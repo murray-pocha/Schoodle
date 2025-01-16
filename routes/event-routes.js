@@ -3,7 +3,7 @@ const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const db = require('../db/connection');
 const e = require('express');
-const { getEventById, getTimeslotsByEventId, createAttendee, createResponsesForAttendee } = require("../db/queries/events")
+const { getEventById, getTimeslotsByEventId, createAttendee, createResponsesForAttendee, getResponsesByEventId } = require("../db/queries/events")
 
 // Tiago start
 let eventId;
@@ -185,20 +185,67 @@ router.get('/:event_id/responses', async (req, res) => {
   const { event_id } = req.params;
 
   try {
-    const event = await db.getEventById(event_id);
+    const event = await getEventById(event_id);
+    const responses = await getResponsesByEventId(event_id);
+    const timeSlots = await getTimeslotsByEventId(event_id);
 
-    const responses = await db.getResponsesByEventId(event_id);
+    // const availabilitySummary = responses.reduce((summary, response) => {
+    //   const { slot_id, response: attendeeResponse } = response;
+    //   if (!summary[slot_id]) {
+    //     summary[slot_id] = { yes: 0, no: 0 };
+    //   }
+    //   summary[slot_id][attendeeResponse]++;
+    //   return summary;
+    // }, {});
+    
+    // const attendees = Object.values(responses.reduce(((accum, curr) => {
+    //   if (!(curr.attendee_id in accum)) {
+    //       accum[curr.attendee_id] = curr;
+    //   }
+    //   return accum;
+    // }), {}))
 
-    const availabilitySummary = responses.reduce((summary, response) => {
-      const { slot_id, response: attendeeResponse } = response;
-      if (!summary[slot_id]) {
-        summary[slot_id] = { yes: 0, no: 0 };
+    // const timeSlots = Object.values(responses.reduce((accum, curr) => {
+    //   if (!(curr.time_slot_id in accum)) {
+    //     accum[curr.slot_id] = {...curr, count: 1};
+    //   } else {
+    //     accum[curr.slot_id].count = accum[curr.slot_id].count + 1;
+    //   }
+    //   return accum;
+    // }, {})).map((timeSlot) => {
+    //     return {
+    //       ...timeSlot,
+    //       yes: timeSlot.count,
+    //       no: attendees.length - timeSlot.count
+    //     }
+    // })
+
+    // const timeSlots = Object.values(responses.reduce((accum, curr) => {
+    //   accum[curr.time_slot_id] = curr
+    //   return accum;
+    // }, {}))
+    const selectedTimeSlots = {}
+
+    const attendees = Object.values(responses.reduce((accum, curr) => {
+      if (!(curr.attendee_id in accum)) {
+        accum[curr.attendee_id] = curr;
       }
-      summary[slot_id][attendeeResponse]++;
-      return summary;
-    }, {});
+      return accum;
+    }, {}))
 
-    res.render('event_responses', { event, responses, availabilitySummary });
+    for (const response of attendees) {
+      selectedTimeSlots[response.attendee_id] = {}
+      for (const timeSlot of timeSlots) {
+
+        if (responses.filter(r => r.attendee_id === response.attendee_id && r.time_slot_id === timeSlot.id).length > 0) {
+          selectedTimeSlots[response.attendee_id][timeSlot.id] = true
+        } else {
+          selectedTimeSlots[response.attendee_id][timeSlot.id] = false
+        }
+      }
+    }
+    // console.log("Time Slots", timeSlots)
+    res.render('responses', { event, responses, timeSlots, selectedTimeSlots, attendees });
   } catch (error) {
     console.error('Error fetching responses:', error);
     res.status(500).send('An error occurred while fetching responses.');
